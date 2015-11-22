@@ -68,6 +68,7 @@ struct modConfData_s {
 
 static struct configSettings_s {
 	char *stateFile;
+	char *directoryPath;
 	int iPersistStateInterval;
 	int ratelimitInterval;
 	int ratelimitBurst;
@@ -82,6 +83,7 @@ static rsRetVal facilityHdlr(uchar **pp, void *pVal);
 /* module-global parameters */
 static struct cnfparamdescr modpdescr[] = {
 	{ "statefile", eCmdHdlrGetWord, 0 },
+	{ "directorypath", eCmdHdlrGetWord, 0 },
 	{ "ratelimit.interval", eCmdHdlrInt, 0 },
 	{ "ratelimit.burst", eCmdHdlrInt, 0 },
 	{ "persiststateinterval", eCmdHdlrInt, 0 },
@@ -656,6 +658,7 @@ CODESTARTbeginCnfLoad
 
 	cs.iPersistStateInterval = DFLT_persiststateinterval;
 	cs.stateFile = NULL;
+	cs.directoryPath = NULL;
 	cs.ratelimitBurst = 20000;
 	cs.ratelimitInterval = 600;
 	cs.iDfltSeverity = DFLT_SEVERITY;
@@ -682,13 +685,18 @@ ENDactivateCnf
 BEGINfreeCnf
 CODESTARTfreeCnf
 	free(cs.stateFile);
+	free(cs.directoryPath);
 ENDfreeCnf
 
 /* open journal */
 BEGINwillRun
 CODESTARTwillRun
 	int ret;
-	ret = sd_journal_open(&j, SD_JOURNAL_LOCAL_ONLY);
+	if (cs.directoryPath) {
+		ret = sd_journal_open_directory(&j, cs.directoryPath, 0);
+	} else {
+		ret = sd_journal_open(&j, SD_JOURNAL_LOCAL_ONLY);
+	}
 	if (ret < 0) {
 		iRet = RS_RET_IO_ERROR;
 	}
@@ -745,6 +753,8 @@ CODESTARTsetModCnf
 			cs.iPersistStateInterval = (int) pvals[i].val.d.n;
 		} else if (!strcmp(modpblk.descr[i].name, "statefile")) {
 			cs.stateFile = (char *)es_str2cstr(pvals[i].val.d.estr, NULL);
+		} else if (!strcmp(modpblk.descr[i].name, "directorypath")) {
+			cs.directoryPath = (char *)es_str2cstr(pvals[i].val.d.estr, NULL);
 		} else if(!strcmp(modpblk.descr[i].name, "ratelimit.burst")) {
 			cs.ratelimitBurst = (int) pvals[i].val.d.n;
 		} else if(!strcmp(modpblk.descr[i].name, "ratelimit.interval")) {
@@ -816,6 +826,8 @@ CODEmodInit_QueryRegCFSLineHdlr
 		NULL, &cs.ratelimitBurst, STD_LOADABLE_MODULE_ID));
 	CHKiRet(omsdRegCFSLineHdlr((uchar *)"imjournalstatefile", 0, eCmdHdlrGetWord,
 		NULL, &cs.stateFile, STD_LOADABLE_MODULE_ID));
+	CHKiRet(omsdRegCFSLineHdlr((uchar *)"imjournaldirectorypath", 0, eCmdHdlrGetWord,
+		NULL, &cs.directoryPath, STD_LOADABLE_MODULE_ID));
 	CHKiRet(omsdRegCFSLineHdlr((uchar *)"imjournalignorepreviousmessages", 0, eCmdHdlrBinary,
 		NULL, &cs.bIgnorePrevious, STD_LOADABLE_MODULE_ID)); 
 	CHKiRet(omsdRegCFSLineHdlr((uchar *)"imjournaldefaultseverity", 0, eCmdHdlrSeverity,
