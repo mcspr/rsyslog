@@ -324,6 +324,11 @@ TESTS += \
 endif
 endif
 
+if ENABLE_IMJOURNAL
+TESTS += \
+	imjournal-basic.sh
+endif
+
 endif # if ENABLE_TESTBENCH
 
 TESTS_ENVIRONMENT = RSYSLOG_MODDIR='$(abs_top_builddir)'/runtime/.libs/
