@@ -12,13 +12,11 @@ ls -l rsyslog.input.journal
 
 # First instance will record penultimate cursor
 . $srcdir/diag.sh startup imjournal-runtime-state-file1.conf
-. $srcdir/diag.sh wait-startup
 . $srcdir/diag.sh wait-queueempty
 . $srcdir/diag.sh custom-content-check "${JOURNAL_CURSOR_4998}" ./test-spool/imjournal.state
 
 # Second instance will start from saved cursor
 . $srcdir/diag.sh startup imjournal-runtime-state-file2.conf 2
-. $srcdir/diag.sh wait-startup 2
 . $srcdir/diag.sh shutdown-when-empty 2
 . $srcdir/diag.sh shutdown-immediate
 
