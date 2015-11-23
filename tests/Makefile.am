@@ -326,7 +326,8 @@ endif
 
 if ENABLE_IMJOURNAL
 TESTS += \
-	imjournal-basic.sh
+	imjournal-basic.sh \
+	imjournal-shutdown-state-file.sh
 endif
 
 endif # if ENABLE_TESTBENCH
