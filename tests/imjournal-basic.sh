@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # rsyslog.input.journal.gz is generated on system running journald:
-# # echo "Compress=no" > /etc/systemd/journald.conf
+# # echo "Compress=no" >> /etc/systemd/journald.conf
 # # echo "RateLimitBurst=10000" >> /etc/systemd/journald.conf
 # # systemctl restart systemd-journald
 # # useradd -m rsyslog-test
